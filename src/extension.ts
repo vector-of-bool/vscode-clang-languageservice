@@ -44,7 +44,7 @@ export function activate(context: vscode.ExtensionContext) {
 
   const clientOptions: LanguageClientOptions = {
     documentSelector: ['cpp', 'c'],
-    outputChannelName: 'Clang LanguageService',
+    // outputChannelName: 'Clang LanguageService',
     // synchronize: {
     //   configurationSection: 'clang.server',
     // },

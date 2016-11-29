@@ -1,5 +1,7 @@
 'use strict';
 
+import * as path from 'path';
+
 import * as vscode from 'vscode';
 import {
   LanguageClient,
@@ -9,7 +11,11 @@ import {
   TransportKind
 } from 'vscode-languageclient';
 
-import {CompilationDatabase, CompilationInfo} from './compiledb';
+import {
+  CompilationDatabase,
+  CompilationInfo,
+  GetCompilationDatabasePathResult
+} from './compiledb';
 
 export interface GetCompilationInfoParams { uri: string; }
 
@@ -34,5 +40,14 @@ export function setupClient(cl: LanguageClient) {
                 compilationInfo: !db ? null : db.getCompilationInfoForUri(uri)
               };
             });
+      });
+
+  cl.onRequest<void, GetCompilationDatabasePathResult, null>(
+      {method: 'vob/cls/getCompilationDatabasePath'}, () => {
+        const filepath = CompilationDatabase.findPathFromCMakeTools();
+        return {
+          filepath: filepath,
+          directory: !filepath ? null : path.dirname(filepath)
+        };
       });
 }

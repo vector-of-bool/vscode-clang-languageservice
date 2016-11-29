@@ -9,6 +9,11 @@ export interface CompilationInfo {
   command: string;
 }
 
+export interface GetCompilationDatabasePathResult {
+  filepath: string | null;
+  directory: string | null;
+}
+
 export class CompilationDatabase {
   private _info_by_filepath: Map<string, CompilationInfo>;
   constructor(infos: CompilationInfo[]) {
@@ -27,9 +32,8 @@ export class CompilationDatabase {
   }
 
   private _removeAllPatterns(str: string, patterns: string[]): string {
-    return patterns.reduce((acc, [needle]) => {
-      return this._replaceAll(acc, needle, '');
-    }, str);
+    return patterns.reduce(
+        (acc, [needle]) => { return this._replaceAll(acc, needle, ''); }, str);
   }
 
   private _normalizeFilePath(fspath: string): string {
@@ -50,6 +54,16 @@ export class CompilationDatabase {
         Array.from(this._info_by_filepath.keys())
             .find(key => this._normalizeFilePath(key) == fsnorm);
     return !matching_key ? null : this._info_by_filepath.get(matching_key) !;
+  }
+
+  public static findPathFromCMakeTools(): string | null {
+    const cmcon = vscode.workspace.getConfiguration('cmake');
+    if (cmcon.has('buildDirectory')) {
+      return path
+          .join(cmcon.get<string>('buildDirectory'), 'compile_commands.json')
+          .replace("${workspaceRoot}", vscode.workspace.rootPath);
+    }
+    return null;
   }
 
   public static fromCMakeTools(): Promise<CompilationDatabase | null> {
